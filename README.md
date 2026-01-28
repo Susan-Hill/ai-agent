@@ -8,7 +8,7 @@ Version 1 focuses on building a minimal but complete autonomous agent that:
 - Tracks intermediate state
 - Produces a final response
 
-This version prioritizes **clarity, determinism, and correctness** over feature breadth.
+This version prioritizes clarity, determinism, and correctness over feature breadth.
 
 ## Agent Responsibilities (V1)
 1. Accept a user task
