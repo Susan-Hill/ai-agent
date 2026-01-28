@@ -1,0 +1,10 @@
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    volumes:
+      - ./app:/app/app
+    env_file:
+      - .env
