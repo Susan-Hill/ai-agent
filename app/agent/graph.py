@@ -36,3 +36,18 @@ def final_response_node(state: AgentState) -> AgentState:
     
     return state
 
+def build_graph():
+    workflow = StateGraph(AgentState)
+
+    workflow.add_node("planner", planner_node)
+    workflow.add_node("tool_selector", tool_selection_node)
+    workflow.add_node("tool_executor", tool_execution_node)
+    workflow.add_node("final", final_response_node)
+
+    workflow.set_entry_point("planner")
+
+    workflow.add_edge("planner", "tool_selector")
+    workflow.add_edge("tool_selector", "tool_executor")
+    workflow.add_edge("tool_executor", "final")
+
+    return workflow.compile()
