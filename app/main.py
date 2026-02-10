@@ -1,14 +1,39 @@
-"""
-V1 Agent Responsibilities:
+import os
+from agent.graph import build_graph
+from agent.state import AgentState
 
-1. Accept a user task
-2. Decide whether a tool is needed
-3. Select a tool
-4. Execute the tool
-5. Return a final response
+# Load environment variables (from .env file)
+OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL")
 
-Tools (V1):
-- Calculator
-- File reader
-- Shell command (sandboxed)
-"""
+if not OLLAMA_BASE_URL or not OLLAMA_MODEL:
+    raise ValueError("OLLAMA_BASE_URL and OLLAMA_MODEL must be set in .env")
+
+def main():
+    # Build the workflow (graph)
+    workflow = build_graph()
+
+    # Minimal initial state
+    initial_state: AgentState = {
+        "user_input": "Summarize this document",  # Change as needed
+        "plan": None,
+        "selected_tool": None,
+        "tool_input": None,
+        "tool_output": None,
+        "reasoning_steps": [],
+        "step_count": 0,
+        "max_steps": 5,
+        "final_answer": None,
+    }
+
+    # Run the workflow once
+    final_state = workflow.invoke(initial_state)
+
+    # Print clean output
+    print("[Workflow] Final Answer:", final_state["final_answer"])
+    print("[Workflow] Reasoning Steps:")
+    for step in final_state["reasoning_steps"]:
+        print("-", step)
+
+if __name__ == "__main__":
+    main()

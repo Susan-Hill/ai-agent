@@ -10,7 +10,7 @@ def planner_node(state: AgentState) -> AgentState:
 def tool_selection_node(state: AgentState) -> AgentState:
     state["reasoning_steps"].append("Tool selector: choosing tool")
 
-    if "calculate" in state["user_input"].lower()
+    if "calculate" in state["user_input"].lower():
         state["selected_tool"] = "calculator"
         state["tool_input"] = state["user_input"]
     else:
