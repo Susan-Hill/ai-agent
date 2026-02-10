@@ -4,7 +4,22 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+    depends_on:
+      - ollama
     volumes:
       - ./app:/app/app
     env_file:
       - .env
+    command: ["python", "app/main.py"]
+
+  ollama:
+    image: ollama/ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:
