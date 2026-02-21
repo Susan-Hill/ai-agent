@@ -10,19 +10,32 @@ def planner_node(state: AgentState) -> AgentState:
 def tool_selection_node(state: AgentState) -> AgentState:
     state["reasoning_steps"].append("Tool selector: choosing tool")
 
-    if "calculate" in state["user_input"].lower():
+    user_input = state["user_input"].lower()
+
+    if "calculate" in user_input:
         state["selected_tool"] = "calculator"
-        state["tool_input"] = state["user_input"]
+        expression = user_input.split("calculate", 1)[1].strip()
+        state["tool_input"] = expression
+
     else:
         state["selected_tool"] = None
-
+        state["tool_input"] = None
+        
     return state
 
 def tool_execution_node(state: AgentState) -> AgentState:
     state["reasoning_steps"].append("Tool executor: running tool")
 
     if state["selected_tool"] == "calculator":
-        state["tool_output"] = calculator(state["tool_input"])
+        result = calculator(state["tool_input"])
+        state["tool_output"] = result
+    
+    elif state["selected_tool"] == "read_file":
+        result = read_file(state["tool_input"])
+        state["tool_output"] = result
+    
+    else:
+        state["tool_output"] = None
     
     return state
 

@@ -15,7 +15,7 @@ def main():
 
     # Minimal initial state
     initial_state: AgentState = {
-        "user_input": "Summarize this document",  # Change as needed
+        "user_input": "Please calculate 5 * 7",  # Change as needed
         "plan": None,
         "selected_tool": None,
         "tool_input": None,
@@ -31,6 +31,7 @@ def main():
 
     # Print clean output
     print("[Workflow] Final Answer:", final_state["final_answer"])
+    print("[Workflow] Tool Output:", final_state["tool_output"])
     print("[Workflow] Reasoning Steps:")
     for step in final_state["reasoning_steps"]:
         print("-", step)
