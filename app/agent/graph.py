@@ -13,25 +13,24 @@ def tool_selection_node(state: AgentState) -> AgentState:
     state["reasoning_steps"].append("Tool selector: using LLM to choose tool")
 
     prompt = f"""
-                You are a tool-using agent. The user input is: "{state['user_input']}".
-                Decide:
-                1. Which tool should be used (calculator, read_file, or None)
-                2. The input to that tool
-                Return as JSON: {{ "tool": <tool_name_or_None>, "input": <tool_input_or_null> }}
+                You are a tool-using agent. User input: "{state['user_input']}".
+                Decide which tool should be used (calculator, read_file, or None) and provide the input to that tool.
+                Return ONLY valid JSON in this exact format:
+                {{"tool": "<tool_name_or_None>", "input": "<tool_input_or_null>"}}
+                Do not include explanations, bullets, or code fences.
             """
     try:
         result = call_ollama(prompt)
-        #print("[DEBUG] LLM raw result:", repr(result), flush=True)
         tool_data = extract_json(result)
         
-        if tool_data:
-            state["selected_tool"] = tool_data.get("tool")
-            state["tool_input"] = tool_data.get("input")
-        
-        else:
+        if tool_data is None:
             state["reasoning_steps"].append("LLM tool selection returned no valid JSON")
             state["selected_tool"] = None
             state["tool_input"] = None
+        
+        else:
+            state["selected_tool"] = tool_data.get("tool")
+            state["tool_input"] = tool_data.get("input")            
     
     except Exception as e:
         state["reasoning_steps"].append(f"LLM tool selection failed: {e}")
@@ -61,6 +60,7 @@ def final_response_node(state: AgentState) -> AgentState:
 
     if state["tool_output"]:
         state["final_answer"] = f"Result: {state['tool_output']}"
+    
     else:
         state["final_answer"] = "No tool was required."
     

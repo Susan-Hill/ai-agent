@@ -13,28 +13,35 @@ def main():
     # Build the workflow (graph)
     workflow = build_graph()
 
-    # Minimal initial state
-    initial_state: AgentState = {
-        "user_input": "Please calculate 5 * 7",  # Change as needed
-        "plan": None,
-        "selected_tool": None,
-        "tool_input": None,
-        "tool_output": None,
-        "reasoning_steps": [],
-        "step_count": 0,
-        "max_steps": 5,
-        "final_answer": None,
-    }
+    while True:
+        user_input = input("Enter your request (or 'exit' to quit): ")
+        if user_input.lower() == "exit":
+            print("Exiting agent.")
+            break
 
-    # Run the workflow once
-    final_state = workflow.invoke(initial_state)
+        # Minimal initial state for this input
+        state: AgentState = {
+            "user_input": user_input,
+            "plan": None,
+            "selected_tool": None,
+            "tool_input": None,
+            "tool_output": None,
+            "reasoning_steps": [],
+            "step_count": 0,
+            "max_steps": 5,
+            "final_answer": None,
+        }
 
-    # Print clean output
-    print("[Workflow] Final Answer:", final_state["final_answer"])
-    print("[Workflow] Tool Output:", final_state["tool_output"])
-    print("[Workflow] Reasoning Steps:")
-    for step in final_state["reasoning_steps"]:
-        print("-", step)
+        # Run the workflow
+        final_state = workflow.invoke(state)
+
+        # Print output
+        print("[Workflow] Final Answer:", final_state["final_answer"])
+        print("[Workflow] Tool Output:", final_state["tool_output"])
+        print("[Workflow] Reasoning Steps:")
+        for step in final_state["reasoning_steps"]:
+            print("-", step)
+        print("\n---\n")
 
 if __name__ == "__main__":
     main()

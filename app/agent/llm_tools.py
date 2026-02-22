@@ -11,20 +11,29 @@ def extract_json(text: str):
     """
     Extract JSON snippet from LLM output.
     Returns dict if successful, else None.
+    Handles extra markdown, code fences, or explanations.
     """
-    # Look for JSON inside ``` ... ``` 
-    match = re.search(r"```(?:json)?\s*(\{.*?\})\s*```", text, re.DOTALL)
-    if match:
-        json_str = match.group(1)
-        try:
-            return json.loads(json_str)
-        except json.JSONDecodeError:
-            return None
-    # fallback: try to parse the whole string
+    # Remove any code fences first
+    text = re.sub(r"```.*?```", "", text, flags=re.DOTALL)
+    # Remove any leading/trailing whitespace
+    text = text.strip()
+
+    # Try to parse the whole text
     try:
         return json.loads(text)
     except json.JSONDecodeError:
-        return None
+        pass
+
+    # Fallback: search for the first {...} block in the text
+    match = re.search(r"(\{.*?\})", text, re.DOTALL)
+    if match:
+        try:
+            return json.loads(match.group(1))
+        except json.JSONDecodeError:
+            return None
+
+    # If no JSON found
+    return None
 
 def call_ollama(prompt: str):
     url = f"{OLLAMA_BASE_URL}/v1/completions"
@@ -35,5 +44,4 @@ def call_ollama(prompt: str):
     }
     response = requests.post(url, json=payload)
     response.raise_for_status()
-    #print("[DEBUG] LLM response:", response.text, flush=True)
     return response.json()["choices"][0]["text"]
