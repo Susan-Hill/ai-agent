@@ -1,6 +1,8 @@
 from langgraph.graph import StateGraph
 from .state import AgentState
 from .tools import calculator, read_file
+from .llm_tools import call_ollama, extract_json
+import json
 
 def planner_node(state: AgentState) -> AgentState:
     state["reasoning_steps"].append("Planner: analyzing user input")
@@ -8,19 +10,34 @@ def planner_node(state: AgentState) -> AgentState:
     return state
 
 def tool_selection_node(state: AgentState) -> AgentState:
-    state["reasoning_steps"].append("Tool selector: choosing tool")
+    state["reasoning_steps"].append("Tool selector: using LLM to choose tool")
 
-    user_input = state["user_input"].lower()
-
-    if "calculate" in user_input:
-        state["selected_tool"] = "calculator"
-        expression = user_input.split("calculate", 1)[1].strip()
-        state["tool_input"] = expression
-
-    else:
+    prompt = f"""
+                You are a tool-using agent. The user input is: "{state['user_input']}".
+                Decide:
+                1. Which tool should be used (calculator, read_file, or None)
+                2. The input to that tool
+                Return as JSON: {{ "tool": <tool_name_or_None>, "input": <tool_input_or_null> }}
+            """
+    try:
+        result = call_ollama(prompt)
+        #print("[DEBUG] LLM raw result:", repr(result), flush=True)
+        tool_data = extract_json(result)
+        
+        if tool_data:
+            state["selected_tool"] = tool_data.get("tool")
+            state["tool_input"] = tool_data.get("input")
+        
+        else:
+            state["reasoning_steps"].append("LLM tool selection returned no valid JSON")
+            state["selected_tool"] = None
+            state["tool_input"] = None
+    
+    except Exception as e:
+        state["reasoning_steps"].append(f"LLM tool selection failed: {e}")
         state["selected_tool"] = None
         state["tool_input"] = None
-        
+
     return state
 
 def tool_execution_node(state: AgentState) -> AgentState:
