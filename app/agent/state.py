@@ -1,5 +1,7 @@
 from typing import TypedDict, List, Optional
 
+
+# Defines the structure of the agent's state throughout the workflow.
 class AgentState(TypedDict):
     user_input: str
 

@@ -8,6 +8,7 @@ services:
       - ollama
     volumes:
       - ./app:/app/app
+      - ./logs:/logs
     env_file:
       - .env
     command: ["python", "app/main.py"]

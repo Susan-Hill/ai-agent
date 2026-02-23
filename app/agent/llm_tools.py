@@ -21,7 +21,8 @@ def extract_json(text: str):
     # Try to parse the whole text
     try:
         return json.loads(text)
-    except json.JSONDecodeError:
+    except json.JSONDecodeError as e:
+        logger.warning(f"Failed to parse JSON: {e}")
         pass
 
     # Fallback: search for the first {...} block in the text
@@ -29,7 +30,8 @@ def extract_json(text: str):
     if match:
         try:
             return json.loads(match.group(1))
-        except json.JSONDecodeError:
+        except json.JSONDecodeError as e:
+            logger.warning(f"Failed to parse JSON in fallback: {e}")
             return None
 
     # If no JSON found
@@ -42,6 +44,10 @@ def call_ollama(prompt: str):
         "prompt": prompt,
         "max_tokens": 100,
     }
-    response = requests.post(url, json=payload)
-    response.raise_for_status()
-    return response.json()["choices"][0]["text"]
+    try:
+        response = requests.post(url, json=payload)
+        response.raise_for_status()
+        return response.json()["choices"][0]["text"]
+    except Exception as e:
+        logger.error(f"OLLAMA API call failed: {e}")
+        raise
